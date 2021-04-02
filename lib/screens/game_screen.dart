@@ -1,7 +1,11 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:desvie/global.dart';
+import 'package:flutter/services.dart';
 
 class GameScreen extends StatefulWidget {
   @override
@@ -13,7 +17,7 @@ class _GameScreenState extends State<GameScreen>
   AnimationController _controller;
   Animation<double> _animation;
   Space space = new Space();
-  Player player = Player(x: 100, y: 100);
+  Player player = Player(x: 150, y: 40);
   var random = math.Random();
 
   List<Enemy> enemies = [];
@@ -28,23 +32,35 @@ class _GameScreenState extends State<GameScreen>
       ),
     )..repeat();
     _animation = new Tween<double>(begin: 0.0, end: 1.0).animate(_controller);
+
+    // load player image
+    _loadPlayerImage();
     super.initState();
+  }
+
+  void _loadPlayerImage() async {
+    ByteData bd = await rootBundle.load("assets/images/desvie.png");
+
+    final Uint8List bytes = Uint8List.view(bd.buffer);
+
+    final ui.Codec codec = await ui.instantiateImageCodec(bytes);
+
+    final ui.Image image = (await codec.getNextFrame()).image;
+    Global.playerImage = image;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: GestureDetector(
-        onPanUpdate: (details) {
-          if (details.delta.dx > 0)
-            player.dx = 1;
-          else
-            player.dx = -1;
+        onPanUpdate: (DragUpdateDetails details) {
+          if ((player.x - details.globalPosition.dx).abs() <= 30) {
+            player.x = details.globalPosition.dx;
+          }
 
-          if (details.delta.dy > 0)
-            player.dy = 1;
-          else
-            player.dy = -1;
+          if ((player.y - details.globalPosition.dy).abs() <= 30) {
+            player.y = details.globalPosition.dy;
+          }
         },
         child: AnimatedBuilder(
           animation: _animation,
@@ -94,53 +110,25 @@ class Space {
 class Player {
   double x;
   double y;
-  double speed = 2;
-  double dx = 0;
-  double dy = 0;
-  double size = 20;
+  double size = 25;
 
   Player({this.x, this.y});
 
   void render(Canvas canvas) {
-    var color = new Paint()..color = new Color(0xffffff00);
-    canvas.drawRect(new Rect.fromLTWH(x, y, size, size), color);
-  }
+    //var color = new Paint()..color = new Color(0xffffff00);
+    //canvas.drawRect(new Rect.fromLTWH(x, y, size, size), color);
 
-  moveX() {
-    x += dx * speed;
-  }
-
-  moveY() {
-    y += dy * speed;
-  }
-
-  void update(Size size) {
-    if (dx > 0) {
-      if ((x + this.size) < size.width) {
-        moveX();
-      }
-    } else {
-      if ((x) > 0) {
-        moveX();
-      }
-    }
-
-    if (dy > 0) {
-      if ((y + this.size) < size.height) {
-        moveY();
-      }
-    } else {
-      if ((y) > 0) {
-        moveY();
-      }
-    }
+    paintImage(
+        canvas: canvas,
+        image: Global.playerImage,
+        rect: Rect.fromLTWH(x, y, size, size));
   }
 }
 
 class Enemy {
   double x;
   double y;
-  double speed = 2;
+  double speed = 3;
   double size = 20;
   bool alive = true;
 
@@ -185,7 +173,6 @@ class MyGame extends CustomPainter {
       Global.score++;
     }
     world.render(canvas);
-    player.update(size);
     player.render(canvas);
 
     if (enemies.isEmpty) {
