@@ -21,17 +21,18 @@ class _HomeScreenState extends State<HomeScreen> {
             Text('Sua pontuação'),
             Text('${Global.score}'),
             ElevatedButton(
-                onPressed: () async {
-                  await Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => GameScreen(),
-                    ),
-                  );
-                  setState(() {
-                    Global.score = Global.score;
-                  });
-                },
-                child: Text('Iniciar'))
+              onPressed: () async {
+                await Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => GameScreen(),
+                  ),
+                );
+                setState(() {
+                  Global.score = Global.score;
+                });
+              },
+              child: Text('Iniciar'),
+            ),
           ],
         ),
       ),
