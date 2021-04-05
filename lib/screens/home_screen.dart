@@ -1,6 +1,9 @@
+import 'package:desvie/app_themes.dart';
+import 'package:desvie/theme_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:desvie/global.dart';
 import 'package:desvie/screens/game_screen.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -31,9 +34,24 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ThemeManager _themeManager = Provider.of<ThemeManager>(context);
     return Scaffold(
       appBar: AppBar(
         title: Text('Desvie'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.track_changes),
+            onPressed: () {
+              if (Global.appTheme == AppTheme.White) {
+                _themeManager.setTheme(AppTheme.Dark);
+                Global.appTheme = AppTheme.Dark;
+              } else {
+                _themeManager.setTheme(AppTheme.White);
+                Global.appTheme = AppTheme.White;
+              }
+            },
+          )
+        ],
       ),
       body: Container(
         padding: EdgeInsets.all(12),
